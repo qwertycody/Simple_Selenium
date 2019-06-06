@@ -144,10 +144,10 @@ public class Utils {
 	}
 	
 	public static List<String> split(String stringToSplit, String whatToSplitBy)
-	{
+	{		
 		List<String> listToReturn = new ArrayList<String>();
 		
-		while(stringToSplit.length() != 0)
+		while(stringToSplit != null && stringToSplit.length() != 0)
 		{
 			if(stringToSplit != null && stringToSplit.contains(whatToSplitBy))
 			{
@@ -160,6 +160,7 @@ public class Utils {
 			else
 			{
 				listToReturn.add(stringToSplit);
+				stringToSplit = stringToSplit.replace(stringToSplit, "");
 			}
 		}
 		

@@ -5,7 +5,9 @@ rm -Rf ./target
 if [ "$1" == "push" ]; then
     git add *
     git remote add origin "$remoteOrigin"
-    git commit -m "Automated Push"
+	echo "Type Commit Message:"
+	read commitMessage
+    git commit -m "$commitMessage"
     git push --force -u origin master    
 fi
 
