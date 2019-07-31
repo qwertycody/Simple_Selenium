@@ -1,13 +1,19 @@
 package com.garrett_tech.simple_selenium.etc;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.StringTokenizer;
+
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 
 import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.By;
@@ -52,9 +58,15 @@ public class Utils {
 
 		return driver;
 	}
-	
-	public static WebDriver getDriver_Basic(boolean headless, String navigationPath){
-	    return getDriver(headless, Constants.getInstance().driver_protocol, Constants.getInstance().driver_hostname, Constants.getInstance().driver_port, Constants.getInstance().driver_basePath, navigationPath, Constants.getInstance().driver_username, Constants.getInstance().driver_password);
+
+	public static WebDriver getDriver_Basic(boolean headless,
+			String navigationPath) {
+		return getDriver(headless, Constants.getInstance().driver_protocol,
+				Constants.getInstance().driver_hostname,
+				Constants.getInstance().driver_port,
+				Constants.getInstance().driver_basePath, navigationPath,
+				Constants.getInstance().driver_username,
+				Constants.getInstance().driver_password);
 	}
 
 	public static WebDriver getDriver(boolean headless, String protocol,
@@ -92,7 +104,7 @@ public class Utils {
 		tempDirectory = tempDirectory + "Selenium_Temp_Directory";
 
 		File tempDirectory_Variable = new File(tempDirectory);
-		
+
 		// attempt to create the directory here
 
 		if (tempDirectory_Variable.exists()) {
@@ -142,28 +154,25 @@ public class Utils {
 			e.printStackTrace();
 		}
 	}
-	
-	public static List<String> split(String stringToSplit, String whatToSplitBy)
-	{		
+
+	public static List<String> split(String stringToSplit, String whatToSplitBy) {
 		List<String> listToReturn = new ArrayList<String>();
-		
-		while(stringToSplit != null && stringToSplit.length() != 0)
-		{
-			if(stringToSplit != null && stringToSplit.contains(whatToSplitBy))
-			{
-				int indexOfToken = stringToSplit.indexOf(whatToSplitBy) + whatToSplitBy.length();
-				String derivedPortion = stringToSplit.substring(0, indexOfToken);
+
+		while (stringToSplit != null && stringToSplit.length() != 0) {
+			if (stringToSplit != null && stringToSplit.contains(whatToSplitBy)) {
+				int indexOfToken = stringToSplit.indexOf(whatToSplitBy)
+						+ whatToSplitBy.length();
+				String derivedPortion = stringToSplit
+						.substring(0, indexOfToken);
 				stringToSplit = stringToSplit.replace(derivedPortion, "");
 				derivedPortion = derivedPortion.replace(whatToSplitBy, "");
 				listToReturn.add(derivedPortion);
-			}
-			else
-			{
+			} else {
 				listToReturn.add(stringToSplit);
 				stringToSplit = stringToSplit.replace(stringToSplit, "");
 			}
 		}
-		
+
 		return listToReturn;
 	}
 
@@ -180,18 +189,18 @@ public class Utils {
 		// "_MENUBAR.SidebarMenu_MENUITEM.SearchParties_MENUITEM.SearchPartieslink")]'
 
 		// Test your own Xpath Expression in Chrome using the below template
-		// $x('.//*[contains(@id, "{PUT_YOUR_VALUE_HERE}")]')		
-		
-		List<String> id_substring_list = split(xpathString, Constants.getInstance().token_replace);
-		
+		// $x('.//*[contains(@id, "{PUT_YOUR_VALUE_HERE}")]')
+
+		List<String> id_substring_list = split(xpathString,
+				Constants.getInstance().token_replace);
+
 		String xpath = null;
 
 		// Position is left in because python is stupid and puts the INDEX and
 		// the VALUE together unless you separate them in a foreach, absolutely
 		// annoying
 
-		for(String id_substring : id_substring_list)
-		{			
+		for (String id_substring : id_substring_list) {
 			if (xpath == null) {
 				xpath = "(.//*[contains(" + attributeType + ", \""
 						+ id_substring + "\")";
@@ -200,7 +209,7 @@ public class Utils {
 						+ id_substring + "\")";
 			}
 		}
-		
+
 		xpath = xpath + "])";
 
 		return xpath;
@@ -284,7 +293,8 @@ public class Utils {
 			String xpath, boolean useXpathAsIs, String value) {
 		if (useXpathAsIs == false) {
 			if (xpath == null) {
-				xpath = ".//*[contains(" + attributeTypeToSearchOn + ", \"" + value + "\")]";
+				xpath = ".//*[contains(" + attributeTypeToSearchOn + ", \""
+						+ value + "\")]";
 			} else {
 				xpath = createXpathExpression(attributeTypeToSearchOn, xpath);
 			}
@@ -310,22 +320,24 @@ public class Utils {
 
 		throwException(attributeTypeToActOn, xpath);
 	}
-	
-	public static void throwException(String attributeTypeToActOn, String xpath)
-	{
-		String exception = "Could not find " + attributeTypeToActOn + " at xpath: " + xpath;
-		
+
+	public static void throwException(String attributeTypeToActOn, String xpath) {
+		String exception = "Could not find " + attributeTypeToActOn
+				+ " at xpath: " + xpath;
+
 		System.out.println(exception);
-		System.out.println("Try using the following generated expression in Chrome Developer Console to Debug:");
+		System.out
+				.println("Try using the following generated expression in Chrome Developer Console to Debug:");
 		System.out.println("$x('" + xpath + "')");
-		
+
 		throw new NoSuchElementException(exception);
 	}
 
 	public static void fill(WebDriver driver, String attributeTypeToSearchOn,
 			String attributeTypeToActOn, String xpath, String value) {
-		doAction(Constants.getInstance().actionType_fill, driver, attributeTypeToSearchOn,
-				attributeTypeToActOn, xpath, false, value);
+		doAction(Constants.getInstance().actionType_fill, driver,
+				attributeTypeToSearchOn, attributeTypeToActOn, xpath, false,
+				value);
 	}
 
 	public static void select_dropdown(WebDriver driver,
@@ -338,21 +350,23 @@ public class Utils {
 
 	public static void click(WebDriver driver, String attributeTypeToSearchOn,
 			String attributeTypeToActOn, String xpath) {
-		doAction(Constants.getInstance().actionType_click, driver, attributeTypeToSearchOn,
-				attributeTypeToActOn, xpath, false, null);
+		doAction(Constants.getInstance().actionType_click, driver,
+				attributeTypeToSearchOn, attributeTypeToActOn, xpath, false,
+				null);
 	}
 
 	public static void click_basic(WebDriver driver,
 			String attributeTypeToSearchOn, String attributeTypeToActOn,
 			String attributeText) {
-		doAction(Constants.getInstance().actionType_click, driver, attributeTypeToSearchOn,
-				attributeTypeToActOn, null, false, attributeText);
+		doAction(Constants.getInstance().actionType_click, driver,
+				attributeTypeToSearchOn, attributeTypeToActOn, null, false,
+				attributeText);
 	}
 
 	public static void fill_basic(WebDriver driver,
 			String attributeTypeToSearchOn, String xpath, String attributeText) {
-		doAction(Constants.getInstance().actionType_fill, driver, attributeTypeToSearchOn,
-				null, xpath, false, attributeText);
+		doAction(Constants.getInstance().actionType_fill, driver,
+				attributeTypeToSearchOn, null, xpath, false, attributeText);
 	}
 
 	public static void click_basic_span_text_exact(WebDriver driver,
@@ -367,8 +381,8 @@ public class Utils {
 		// just click the first instance that pops up
 
 		String xpath = ".//*[text() = \"" + attributeText + "\"]";
-		doAction(Constants.getInstance().actionType_click, driver, null, null, xpath, true,
-				attributeText);
+		doAction(Constants.getInstance().actionType_click, driver, null, null,
+				xpath, true, attributeText);
 	}
 
 	public static void click_basic_span_text_wildcard(WebDriver driver,
@@ -383,7 +397,63 @@ public class Utils {
 		// just click the first instance that pops up
 
 		String xpath = "//*[contains(text(),\"" + attributeText + "\")]";
-		doAction(Constants.getInstance().actionType_click, driver, null, null, xpath, true,
-				attributeText);
+		doAction(Constants.getInstance().actionType_click, driver, null, null,
+				xpath, true, attributeText);
+	}
+
+	public static String getText(String question) {
+		JFrame frame = new JFrame();
+		return JOptionPane.showInputDialog(frame, question);
+	}
+
+	// Moves first instance of a file that ends with a specific extension
+	// to the temp directory and opens it
+
+	public static void moveToTempAndExecute(String fileExtension,
+			String fileName) throws InterruptedException {
+		while (true) {
+			Thread.sleep(500);
+
+			boolean fileExists = false;
+
+			for (File file : Constants.getInstance().getDownloadsFolder()
+					.listFiles()) {
+				if (file.getName().endsWith(fileExtension)) {
+					fileExists = true;
+					try {
+						String tempDir = System.getProperty("java.io.tmpdir");
+						Path newPath = new File(tempDir + "/" + fileName)
+								.toPath();
+						Files.move(file.toPath(), newPath);
+						Runtime.getRuntime().exec(
+								"cmd.exe /c start \"\" " + newPath.toString());
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					break;
+				}
+
+			}
+
+			if (fileExists == true) {
+				break;
+			}
+		}
+	}
+
+	public static void clearFilesFromFolderMatchingExtension(String extension,
+			String folder) {
+		try {
+			File directory = new File(folder);
+
+			for (File file : directory.listFiles()) {
+				if (file.getName().endsWith(extension)) {
+					file.delete();
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 }
