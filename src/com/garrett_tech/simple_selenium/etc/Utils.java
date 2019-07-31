@@ -54,7 +54,7 @@ public class Utils {
 	}
 	
 	public static WebDriver getDriver_Basic(boolean headless, String navigationPath){
-	    return getDriver(headless, Constants.driver_protocol, Constants.driver_hostname, Constants.driver_port, Constants.driver_basePath, navigationPath, Constants.driver_username, Constants.driver_password);
+	    return getDriver(headless, Constants.getInstance().driver_protocol, Constants.getInstance().driver_hostname, Constants.getInstance().driver_port, Constants.getInstance().driver_basePath, navigationPath, Constants.getInstance().driver_username, Constants.getInstance().driver_password);
 	}
 
 	public static WebDriver getDriver(boolean headless, String protocol,
@@ -89,17 +89,17 @@ public class Utils {
 	public static String getTempDirectory() {
 		String property = "java.io.tmpdir";
 		String tempDirectory = System.getProperty(property);
-		tempDirectory = tempDirectory + "/" + "Selenium_Temp_Directory";
+		tempDirectory = tempDirectory + "Selenium_Temp_Directory";
 
 		File tempDirectory_Variable = new File(tempDirectory);
-
+		
 		// attempt to create the directory here
-		boolean successful = tempDirectory_Variable.mkdir();
 
-		if (successful) {
+		if (tempDirectory_Variable.exists()) {
 			return tempDirectory;
 		} else {
-			return null;
+			tempDirectory_Variable.mkdir();
+			return tempDirectory;
 		}
 	}
 
@@ -182,7 +182,7 @@ public class Utils {
 		// Test your own Xpath Expression in Chrome using the below template
 		// $x('.//*[contains(@id, "{PUT_YOUR_VALUE_HERE}")]')		
 		
-		List<String> id_substring_list = split(xpathString, Constants.token_replace);
+		List<String> id_substring_list = split(xpathString, Constants.getInstance().token_replace);
 		
 		String xpath = null;
 
@@ -208,14 +208,14 @@ public class Utils {
 
 	public static void doActionOnElement_decideAction(String actionType,
 			WebDriver driver, WebElement element, String value) {
-		if (actionType == Constants.actionType_click) {
+		if (actionType == Constants.getInstance().actionType_click) {
 			element.click();
 		}
-		if (actionType == Constants.actionType_fill) {
+		if (actionType == Constants.getInstance().actionType_fill) {
 			element.clear();
 			element.sendKeys(value);
 		}
-		if (actionType == Constants.actionType_select_dropdown) {
+		if (actionType == Constants.getInstance().actionType_select_dropdown) {
 			Select select = new Select(element);
 			select.selectByVisibleText(value);
 		}
@@ -324,34 +324,34 @@ public class Utils {
 
 	public static void fill(WebDriver driver, String attributeTypeToSearchOn,
 			String attributeTypeToActOn, String xpath, String value) {
-		doAction(Constants.actionType_fill, driver, attributeTypeToSearchOn,
+		doAction(Constants.getInstance().actionType_fill, driver, attributeTypeToSearchOn,
 				attributeTypeToActOn, xpath, false, value);
 	}
 
 	public static void select_dropdown(WebDriver driver,
 			String attributeTypeToSearchOn, String attributeTypeToActOn,
 			String xpath, String value) {
-		doAction(Constants.actionType_select_dropdown, driver,
+		doAction(Constants.getInstance().actionType_select_dropdown, driver,
 				attributeTypeToSearchOn, attributeTypeToActOn, xpath, false,
 				value);
 	}
 
 	public static void click(WebDriver driver, String attributeTypeToSearchOn,
 			String attributeTypeToActOn, String xpath) {
-		doAction(Constants.actionType_click, driver, attributeTypeToSearchOn,
+		doAction(Constants.getInstance().actionType_click, driver, attributeTypeToSearchOn,
 				attributeTypeToActOn, xpath, false, null);
 	}
 
 	public static void click_basic(WebDriver driver,
 			String attributeTypeToSearchOn, String attributeTypeToActOn,
 			String attributeText) {
-		doAction(Constants.actionType_click, driver, attributeTypeToSearchOn,
+		doAction(Constants.getInstance().actionType_click, driver, attributeTypeToSearchOn,
 				attributeTypeToActOn, null, false, attributeText);
 	}
 
 	public static void fill_basic(WebDriver driver,
 			String attributeTypeToSearchOn, String xpath, String attributeText) {
-		doAction(Constants.actionType_fill, driver, attributeTypeToSearchOn,
+		doAction(Constants.getInstance().actionType_fill, driver, attributeTypeToSearchOn,
 				null, xpath, false, attributeText);
 	}
 
@@ -367,7 +367,7 @@ public class Utils {
 		// just click the first instance that pops up
 
 		String xpath = ".//*[text() = \"" + attributeText + "\"]";
-		doAction(Constants.actionType_click, driver, null, null, xpath, true,
+		doAction(Constants.getInstance().actionType_click, driver, null, null, xpath, true,
 				attributeText);
 	}
 
@@ -383,7 +383,7 @@ public class Utils {
 		// just click the first instance that pops up
 
 		String xpath = "//*[contains(text(),\"" + attributeText + "\")]";
-		doAction(Constants.actionType_click, driver, null, null, xpath, true,
+		doAction(Constants.getInstance().actionType_click, driver, null, null, xpath, true,
 				attributeText);
 	}
 }

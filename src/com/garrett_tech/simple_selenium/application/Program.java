@@ -8,7 +8,7 @@ public class Program {
 		
     public static void main(String[] args) throws Exception{
     	try {
-			Constants.setArguments(args);
+			Constants.getInstance().setArguments(args);
 			ExampleTest_NavigateToGithub.navigate();
 		} catch (Exception e) {
 			e.printStackTrace();

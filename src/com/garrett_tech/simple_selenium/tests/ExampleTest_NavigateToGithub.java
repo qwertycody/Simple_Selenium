@@ -8,10 +8,10 @@ import com.garrett_tech.simple_selenium.etc.Utils;
 public class ExampleTest_NavigateToGithub {
 	public static void navigate() throws InterruptedException
 	{
-		Constants.driver_protocol = "https";
-		Constants.driver_hostname = "github.com";
-		Constants.driver_port = "443";
-		Constants.driver_basePath = "qwertycody";
+		Constants.getInstance().driver_protocol = "https";
+		Constants.getInstance().driver_hostname = "github.com";
+		Constants.getInstance().driver_port = "443";
+		Constants.getInstance().driver_basePath = "qwertycody";
 		
 		WebDriver driver = Utils.getDriver_Basic(false, "");
 		
@@ -32,7 +32,7 @@ public class ExampleTest_NavigateToGithub {
 		
 		//Wildcard xpath Example 
 		//(sometimes java apps will generate a random value in a element's ID during JSP view/compilation
-		String input_xpath_wildcard = "your" + Constants.token_replace + "repos" + Constants.token_replace + "filter";
+		String input_xpath_wildcard = "your" + Constants.getInstance().token_replace + "repos" + Constants.getInstance().token_replace + "filter";
 		Utils.fill(driver, "@id", "input", input_xpath_wildcard, "This function is clever and I will subscribe on Patreon.");
 	}
 }
