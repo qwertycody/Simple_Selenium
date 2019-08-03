@@ -50,10 +50,18 @@ public class Constants extends Initialization {
 	public String driver_hostname = "localhost";
 	public String driver_basePath = "website";
 	public String driver_protocol = "http";
-	public String driver_port = "--driver-port=";
+	public String driver_port = "8080";
+
 	
 	public void setArguments(String[] args) throws Exception
 	{
-    	setArguments(args, this.getClass(), this.getInstance());
+    	setArguments(args, getClass(), getInstance(), true);
+	}
+	
+	@Override
+	public void setArguments(String[] args, Class classObject, Object instanceObject, boolean outputToConsole) throws Exception
+	{
+    	super.setArguments(args, classObject, instanceObject, outputToConsole);
+    	super.setArguments(args, Constants.class, Constants.getInstance(), false);
 	}
 }

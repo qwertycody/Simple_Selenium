@@ -5,10 +5,13 @@ import java.lang.reflect.Field;
 public class Initialization {
 	public String driver_path = "";
 	
-	public void setArguments(String[] args, Class classObject, Object instanceObject) throws Exception
+	public void setArguments(String[] args, Class classObject, Object instanceObject, boolean outputToConsole) throws Exception
 	{
-    	System.out.println("Running with the following Arguments:");
-    	    	
+		if(outputToConsole)
+		{
+			System.out.println("Running with the following Arguments:");
+		}   
+		
 		for(String arg : args)
 		{
 			for(Field field : classObject.getFields())
@@ -18,7 +21,10 @@ public class Initialization {
 				
 				if(arg.contains(fieldName) || arg.contains(fieldNameWithDashes))
 				{
-					System.out.println(arg);
+					if(outputToConsole)
+					{
+						System.out.println(arg);
+					}
 					
 					arg = arg.replace(fieldName, "");
 					arg = arg.replace(fieldNameWithDashes, "");
