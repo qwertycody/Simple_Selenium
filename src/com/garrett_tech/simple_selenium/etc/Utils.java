@@ -1,5 +1,7 @@
 package com.garrett_tech.simple_selenium.etc;
 
+import java.awt.Component;
+import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -26,7 +28,10 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.support.ui.ExpectedCondition;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
 public class Utils {
 	public static String encodeString(String stringToEncode) {
@@ -37,6 +42,17 @@ public class Utils {
 			e.printStackTrace();
 			return null;
 		}
+	}
+
+	public static void waitForLoad(WebDriver driver) {
+		ExpectedCondition<Boolean> pageLoadCondition = new ExpectedCondition<Boolean>() {
+			public Boolean apply(WebDriver driver) {
+				return ((JavascriptExecutor) driver).executeScript(
+						"return document.readyState").equals("complete");
+			}
+		};
+		WebDriverWait wait = new WebDriverWait(driver, 30);
+		wait.until(pageLoadCondition);
 	}
 
 	public static WebDriver getDriverForOS(boolean headless) {
@@ -82,7 +98,6 @@ public class Utils {
 			username = encodeString(username);
 			password = encodeString(password);
 			basePath = encodeString(basePath);
-			navigationPath = encodeString(navigationPath);
 
 			fullURL = protocol + "://" + username + ":" + password + "@"
 					+ hostname + ":" + port + "/" + basePath + "/"
@@ -122,34 +137,37 @@ public class Utils {
 		return ts.toString();
 	}
 
-	public static String driver_GetScreenshot(WebDriver driver, String fileName) {
+	public static File driver_GetScreenshot(WebDriver driver, String fileName) {
 		String tempDirectory = getTempDirectory();
 
 		if (fileName == null) {
 			fileName = getTimestamp();
 		}
 
+		fileName = fileName.replaceAll(":", "_");
+
 		String pathOfScreenshot = tempDirectory + "/" + fileName + ".png";
 
-		File screenshot = (File) ((TakesScreenshot) driver)
+		File screenshotObject = (File) ((TakesScreenshot) driver)
 				.getScreenshotAs(OutputType.FILE);
 
+		File screenshotFinalPath = new File(pathOfScreenshot);
+
 		try {
-			FileUtils.copyFile(screenshot, new File(pathOfScreenshot));
+			FileUtils.moveFile(screenshotObject, screenshotFinalPath);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
-		return pathOfScreenshot;
+		return screenshotFinalPath;
 	}
 
 	// This method may only work on windows idk
 	public static void driver_GetScreenshot_Open(WebDriver driver) {
-		String screenshot = driver_GetScreenshot(driver, null);
-		Runtime runtime = Runtime.getRuntime(); // getting Runtime object
+		File screenshot = driver_GetScreenshot(driver, null);
 
 		try {
-			runtime.exec(screenshot); // opens new notepad instance
+			Desktop.getDesktop().open(screenshot);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -243,11 +261,23 @@ public class Utils {
 				"arguments[0].scrollIntoView("
 						+ objectBeneathWhereYouCurrentlyAre + ");", element);
 
-		try {
-			Thread.sleep(1000);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		// Move Mouse to Element
+		Actions action = new Actions(driver);
+		action.moveToElement(element);
+		action.perform();
+	}
+
+	public static void doActionOnElement_ScrollIntoView_Horizontal(
+			WebDriver driver, WebElement element, boolean left, boolean right) {
+
+		if (left) {
+			((JavascriptExecutor) driver)
+					.executeScript("window.scrollBy(2000,0)");
+		}
+
+		if (right) {
+			((JavascriptExecutor) driver)
+					.executeScript("window.scrollBy(-2000,0)");
 		}
 
 		// Move Mouse to Element
@@ -259,7 +289,7 @@ public class Utils {
 	public static void doActionOnElement(String actionType, WebDriver driver,
 			WebElement element, String value) {
 		// Try it one way first and if it fails try it the second way, if the
-		// both fail we will hault the program here
+		// both fail we will halt the program here
 
 		try {
 			doActionOnElement_decideAction(actionType, driver, element, value);
@@ -275,22 +305,60 @@ public class Utils {
 				doActionOnElement_decideAction(actionType, driver, element,
 						value);
 			} catch (Exception a) {
-				System.out.println("Second attempt to act on element failed.");
-				System.out
-						.println("Retrying again with a repositioning of the mouse and screen.");
+				try {
+					System.out
+							.println("Second attempt to act on element failed.");
+					System.out
+							.println("Retrying again with a repositioning of the mouse and screen.");
 
-				// #Ensure Element is Viewable on the Screen
-				doActionOnElement_ScrollIntoView(driver, element, "false");
-				// #Attempt to do the action again
-				doActionOnElement_decideAction(actionType, driver, element,
-						value);
+					// #Ensure Element is Viewable on the Screen
+					doActionOnElement_ScrollIntoView(driver, element, "false");
+					// #Attempt to do the action again
+					doActionOnElement_decideAction(actionType, driver, element,
+							value);
+				} catch (Exception e1) {
+					try {
+						System.out
+								.println("Third attempt to act on element failed.");
+						System.out
+								.println("Retrying again with a repositioning of the mouse and screen horizontally.");
+
+						// #Ensure Element is Viewable on the Screen
+						doActionOnElement_ScrollIntoView_Horizontal(driver,
+								element, true, false);
+						// #Attempt to do the action again
+						doActionOnElement_decideAction(actionType, driver,
+								element, value);
+					} catch (Exception e2) {
+						System.out
+								.println("Fourth attempt to act on element failed.");
+						System.out
+								.println("Retrying again with a repositioning of the mouse and screen horizontally.");
+
+						// #Ensure Element is Viewable on the Screen
+						doActionOnElement_ScrollIntoView_Horizontal(driver,
+								element, false, true);
+						// #Attempt to do the action again
+						doActionOnElement_decideAction(actionType, driver,
+								element, value);
+					}
+				}
 			}
 		}
+
+	}
+
+	public static int promptUser(String theMessage) {
+		int result = JOptionPane.showConfirmDialog((Component) null,
+				theMessage, "Alert", JOptionPane.OK_CANCEL_OPTION);
+		return result;
 	}
 
 	public static void doAction(String actionType, WebDriver driver,
 			String attributeTypeToSearchOn, String attributeTypeToActOn,
-			String xpath, boolean useXpathAsIs, String value) {
+			String xpath, boolean useXpathAsIs, String value,
+			Boolean allowException) {
+
 		if (useXpathAsIs == false) {
 			if (xpath == null) {
 				xpath = ".//*[contains(" + attributeTypeToSearchOn + ", \""
@@ -300,25 +368,58 @@ public class Utils {
 			}
 		}
 
-		List<WebElement> elementList = driver.findElements(By.xpath(xpath));
+		while (true) {
+			try {
 
-		if (elementList == null || elementList.size() == 0) {
-			throwException(attributeTypeToActOn, xpath);
-		} else {
-			if (attributeTypeToActOn == null) {
-				doActionOnElement(actionType, driver, elementList.get(0), value);
-				return;
-			}
+				waitForLoad(driver);
 
-			for (WebElement element : elementList) {
-				if (element.getTagName().equalsIgnoreCase(attributeTypeToActOn)) {
-					doActionOnElement(actionType, driver, element, value);
+				WebDriverWait wait = new WebDriverWait(driver, 10);
+
+				wait.until(ExpectedConditions.visibilityOfElementLocated(By
+						.xpath(xpath)));
+
+				List<WebElement> elementList = driver.findElements(By
+						.xpath(xpath));
+
+				if (elementList == null || elementList.size() == 0) {
+					throwException(attributeTypeToActOn, xpath);
+				} else {
+					if (attributeTypeToActOn == null) {
+						doActionOnElement(actionType, driver,
+								elementList.get(0), value);
+						return;
+					}
+
+					for (WebElement element : elementList) {
+						if (element.getTagName().equalsIgnoreCase(
+								attributeTypeToActOn)) {
+							doActionOnElement(actionType, driver, element,
+									value);
+							return;
+						}
+					}
+				}
+
+				throwException(attributeTypeToActOn, xpath);
+
+			} catch (Exception e) {
+				if (allowException == true) {
+					throw (e);
+				}
+
+				if (Constants.getInstance().promptOnError() == true) {
+					e.printStackTrace();
+
+					String message = "Error Detecting Element, Clear Errors On Browser and Click Ok.";
+					int option = promptUser(message);
+					if (option == JOptionPane.CANCEL_OPTION) {
+						System.exit(0);
+					}
+				} else {
 					return;
 				}
 			}
 		}
-
-		throwException(attributeTypeToActOn, xpath);
 	}
 
 	public static void throwException(String attributeTypeToActOn, String xpath) {
@@ -334,43 +435,46 @@ public class Utils {
 	}
 
 	public static void fill(WebDriver driver, String attributeTypeToSearchOn,
-			String attributeTypeToActOn, String xpath, String value) {
+			String attributeTypeToActOn, String xpath, String value,
+			Boolean allowException) {
 		doAction(Constants.getInstance().actionType_fill, driver,
 				attributeTypeToSearchOn, attributeTypeToActOn, xpath, false,
-				value);
+				value, allowException);
 	}
 
 	public static void select_dropdown(WebDriver driver,
 			String attributeTypeToSearchOn, String attributeTypeToActOn,
-			String xpath, String value) {
+			String xpath, String value, Boolean allowException) {
 		doAction(Constants.getInstance().actionType_select_dropdown, driver,
 				attributeTypeToSearchOn, attributeTypeToActOn, xpath, false,
-				value);
+				value, allowException);
 	}
 
 	public static void click(WebDriver driver, String attributeTypeToSearchOn,
-			String attributeTypeToActOn, String xpath) {
+			String attributeTypeToActOn, String xpath, Boolean allowException) {
 		doAction(Constants.getInstance().actionType_click, driver,
 				attributeTypeToSearchOn, attributeTypeToActOn, xpath, false,
-				null);
+				null, allowException);
 	}
 
 	public static void click_basic(WebDriver driver,
 			String attributeTypeToSearchOn, String attributeTypeToActOn,
-			String attributeText) {
+			String attributeText, Boolean allowException) {
 		doAction(Constants.getInstance().actionType_click, driver,
 				attributeTypeToSearchOn, attributeTypeToActOn, null, false,
-				attributeText);
+				attributeText, allowException);
 	}
 
 	public static void fill_basic(WebDriver driver,
-			String attributeTypeToSearchOn, String xpath, String attributeText) {
+			String attributeTypeToSearchOn, String xpath, String attributeText,
+			Boolean allowException) {
 		doAction(Constants.getInstance().actionType_fill, driver,
-				attributeTypeToSearchOn, null, xpath, false, attributeText);
+				attributeTypeToSearchOn, null, xpath, false, attributeText,
+				allowException);
 	}
 
 	public static void click_basic_span_text_exact(WebDriver driver,
-			String attributeText) {
+			String attributeText, Boolean allowException) {
 
 		// Usage example for this method would be if the below html you are
 		// looking to target
@@ -382,11 +486,11 @@ public class Utils {
 
 		String xpath = ".//*[text() = \"" + attributeText + "\"]";
 		doAction(Constants.getInstance().actionType_click, driver, null, null,
-				xpath, true, attributeText);
+				xpath, true, attributeText, allowException);
 	}
 
 	public static void click_basic_span_text_wildcard(WebDriver driver,
-			String attributeText) {
+			String attributeText, boolean allowException) {
 
 		// Usage example for this method would be if the below html you are
 		// looking to target
@@ -398,7 +502,7 @@ public class Utils {
 
 		String xpath = "//*[contains(text(),\"" + attributeText + "\")]";
 		doAction(Constants.getInstance().actionType_click, driver, null, null,
-				xpath, true, attributeText);
+				xpath, true, attributeText, allowException);
 	}
 
 	public static String getText(String question) {

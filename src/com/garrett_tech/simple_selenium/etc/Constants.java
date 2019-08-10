@@ -51,7 +51,20 @@ public class Constants extends Initialization {
 	public String driver_basePath = "website";
 	public String driver_protocol = "http";
 	public String driver_port = "8080";
-
+	
+	public String driver_prompt_on_error = "false";
+	
+	public Boolean promptOnError()
+	{
+		String trueString = "true";
+		
+		if(driver_prompt_on_error != null && driver_prompt_on_error.equalsIgnoreCase(trueString))
+		{
+			return true;
+		}
+		
+		return false;
+	}
 	
 	public void setArguments(String[] args) throws Exception
 	{
